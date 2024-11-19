@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status dos Computadores</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .computador {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .componente {
+            margin-left: 20px;
+        }
+        .quebrado {
+            color: red;
+        }
+        .funcionando {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Status dos Computadores</h1>
+    {% for computador in status %}
+        <div class="computador">
+            <h2>Computador {{ computador.id }}</h2>
+            <ul>
+                {% for componente in computador.componentes %}
+                    <li class="componente {{ componente.estado }}">
+                        {{ componente.nome }}: {{ componente.vida }} ciclos restantes ({{ componente.estado }})
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endfor %}
+    <script>
+        setInterval(() => {
+            window.location.reload();
+        }, 5000);  // Atualiza a página a cada 5 segundos
+    </script>
+</body>
+</html>
