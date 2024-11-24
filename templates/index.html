@@ -1,49 +1,131 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <title>Status dos Computadores</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        .computador {
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .componente {
-            margin-left: 20px;
-        }
-        .quebrado {
-            color: red;
-        }
-        .funcionando {
-            color: green;
-        }
-    </style>
 </head>
+
 <body>
-    <h1>Status dos Computadores</h1>
-    {% for computador in status %}
-        <div class="computador">
-            <h2>Computador {{ computador.id }}</h2>
-            <ul>
+    <div class="main-container">
+        <h1>Status dos Computadores</h1>
+
+        <!-- Status dos Computadores -->
+        <div class="computadores-container">
+            {% for computador in status %}
+            <div class="computador">
+                <img src="{{ url_for('static', filename='image/computer-svgrepo-com.png') }}" alt="Computador" height="200px" width="200px">
+                <h2>Computador {{ computador.id }}</h2>
+                <!-- Componentes -->
                 {% for componente in computador.componentes %}
-                    <li class="componente {{ componente.estado }}">
-                        {{ componente.nome }}: {{ componente.vida }} ciclos restantes ({{ componente.estado }})
-                    </li>
+                <p class="componente">
+                    {{ componente.nome }}: {{ componente.vida }} ciclos restantes
+                    (<span class="{{ componente.estado }}">{{ componente.estado }}</span>)
+                    {% if componente.aviso_manutencao %}
+                        <span class="aviso-manutencao">Aviso: Manutenção Preventiva recomendada!</span>
+                        <button id="manutencao-preventiva-{{ componente.id }}" 
+                                onclick="realizarManutencaoPreventiva('{{ componente.id }}')">
+                            Realizar Manutenção Preventiva
+                        </button>
+                        
+
+                    {% endif %}
+                </p>
+                {% endfor %}
+                <button onclick="consertarComputador({{ computador.id }})">Consertar Computador</button>
+            </div>
+            {% endfor %}
+        </div>
+
+        <h2>Histórico Global de Problemas</h2>
+        <div class="historico-container">
+            {% if historico %}
+            <ul>
+                {% for registro in historico %}
+                <li>
+                    Computador {{ registro.computador_id }} - {{ registro.componente }}:
+                    Problema: {{ registro.problema }},
+                    Custo: R$ {{ registro.custo }},
+                    Método de Conserto: {{ registro.conserto }}
+                </li>
                 {% endfor %}
             </ul>
+            {% else %}
+            <p>Sem problemas registrados.</p>
+            {% endif %}
         </div>
-    {% endfor %}
+
+        <button class="adicionar-computador" onclick="adicionarComputador()">Adicionar Computador</button>
+    </div>
+
     <script>
         setInterval(() => {
             window.location.reload();
-        }, 5000);  // Atualiza a página a cada 5 segundos
+        }, 2000);
+
+        function consertarComputador(id) {
+            fetch(`/consertar/${id}`, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert("Erro ao consertar o computador.");
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert("Erro ao consertar o computador.");
+                });
+        }
+
+        function adicionarComputador() {
+            fetch('/adicionar', { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert("Erro ao adicionar o computador.");
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert("Erro ao adicionar o computador.");
+                });
+        }
+
+        function realizarManutencaoPreventiva(id) {
+            if (!id) {
+                console.error("ID do componente não fornecido ou inválido.");
+                alert("Erro: ID do componente não encontrado.");
+                return;
+            }
+            console.log(`Iniciando manutenção preventiva para o componente com ID: ${id}`);
+
+            fetch(`/manutencao_preventiva/${id}`, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error("Erro na requisição ao servidor.");
+                    }
+                })
+                .then(data => {
+                    if (data.success) {
+                        console.log(`Manutenção preventiva realizada com sucesso para o componente ${id}`);
+                        window.location.reload(); // Atualiza a página
+                    } else {
+                        console.error(`Erro: ${data.message}`);
+                        alert("Erro ao realizar a manutenção preventiva: " + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro ao realizar manutenção preventiva:", error);
+                    alert("Erro ao realizar manutenção preventiva.");
+                });
+        }
     </script>
 </body>
+
 </html>

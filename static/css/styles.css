@@ -1,0 +1,104 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.main-container {
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 1200px;
+    padding: 20px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 28px;
+    color: #4b4b4b;
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.computadores-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.computador {
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 320px;
+    padding: 20px;
+    text-align: center;
+}
+
+.computador svg {
+    width: 80px;
+    /* Ajuste do tamanho da imagem */
+    height: 80px;
+    margin-bottom: 10px;
+}
+
+.computador h2 {
+    font-size: 18px;
+    color: #5b97d7;
+    margin-bottom: 10px;
+}
+
+.componente {
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+.componente span {
+    white-space: nowrap;
+    /* Impede quebra de linha */
+}
+
+.funcionando {
+    color: green;
+}
+
+.quebrado {
+    color: red;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px 15px;
+    font-size: 14px;
+    color: #fff;
+    background-color: #5b97d7;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #5b97d7;
+}
+
+.adicionar-computador {
+    margin-top: 20px;
+    display: inline-block;
+    padding: 15px 20px;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.adicionar-computador:hover {
+    background-color: #218838;
+}
