@@ -13,32 +13,36 @@
         <h1>Status dos Computadores</h1>
 
         <!-- Status dos Computadores -->
-        <div class="computadores-container">
+        <div id="computadoresContainer" class="computadores-container">
             {% for computador in status %}
             <div class="computador">
-                <img src="{{ url_for('static', filename='image/computer-svgrepo-com.png') }}" alt="Computador" height="200px" width="200px">
+                <img src="{{ url_for('static', filename='image/computer-svgrepo-com.png') }}" alt="Computador" height="100px" width="100px">
                 <h2>Computador {{ computador.id }}</h2>
                 <!-- Componentes -->
                 {% for componente in computador.componentes %}
-                <p class="componente">
-                    {{ componente.nome }}: {{ componente.vida }} ciclos restantes
-                    (<span class="{{ componente.estado }}">{{ componente.estado }}</span>)
-                    {% if componente.aviso_manutencao %}
-                        <span class="aviso-manutencao">Aviso: Manutenção Preventiva recomendada!</span>
-                        <button id="manutencao-preventiva-{{ componente.id }}" 
-                                onclick="realizarManutencaoPreventiva('{{ componente.id }}')">
-                            Realizar Manutenção Preventiva
-                        </button>
-                        
+                <div class="componente">
+                    <p>Componente: {{ componente.nome }}</p>
+                    <p>Estado: 
+                        <span class="{{ 'funcionando' if componente.estado == 'funcionando' else 'quebrado' }}">
+                            {{ componente.estado }}
+                        </span>
+                    </p>
+                    <p>Tempo de vida: {{ componente.vida }}</p>
 
+                    {% if componente.aviso_manutencao and componente.vida <= 3 %}
+                    <p class="aviso">⚠️ Manutenção preventiva recomendada!</p>
+                    <button onclick="realizarManutencaoPreventiva({{ computador.id }}, {{ loop.index0 }})">
+                        Realizar manutenção preventiva
+                    </button>
                     {% endif %}
-                </p>
+                </div>
                 {% endfor %}
-                <button onclick="consertarComputador({{ computador.id }})">Consertar Computador</button>
+                <button onclick="consertarComputador({{ computador.id }})">🔧 Consertar Computador</button>
             </div>
             {% endfor %}
         </div>
 
+        <!-- Histórico Global -->
         <h2>Histórico Global de Problemas</h2>
         <div class="historico-container">
             {% if historico %}
@@ -46,8 +50,8 @@
                 {% for registro in historico %}
                 <li>
                     Computador {{ registro.computador_id }} - {{ registro.componente }}:
-                    Problema: {{ registro.problema }},
-                    Custo: R$ {{ registro.custo }},
+                    Problema: {{ registro.problema }} |
+                    Custo: R$ {{ registro.custo }} |
                     Método de Conserto: {{ registro.conserto }}
                 </li>
                 {% endfor %}
@@ -57,13 +61,55 @@
             {% endif %}
         </div>
 
-        <button class="adicionar-computador" onclick="adicionarComputador()">Adicionar Computador</button>
+        <button class="adicionar-computador" onclick="adicionarComputador()">➕ Adicionar Computador</button>
     </div>
 
     <script>
-        setInterval(() => {
-            window.location.reload();
-        }, 2000);
+        // Função para atualizar o tempo de vida dos computadores
+        function atualizarTempoVida() {
+            fetch('/atualizar_tempo_vida')
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Erro ao atualizar o tempo de vida.');
+                    }
+                })
+                .then(data => {
+                    const computadoresContainer = document.querySelector('.computadores-container');
+                    computadoresContainer.innerHTML = ''; // Limpa o conteúdo atual
+
+                    // Atualiza a interface com os dados recebidos
+                    data.status.forEach(computador => {
+                        const computadorDiv = document.createElement('div');
+                        computadorDiv.classList.add('computador');
+                        computadorDiv.setAttribute('data-id', computador.id);
+                        computadorDiv.innerHTML = `
+                            <img src="/static/image/computer-svgrepo-com.png" alt="Computador" height="100px" width="100px">
+                            <h2>Computador ${computador.id}</h2>
+                            ${computador.componentes.map(componente => `
+                                <div class="componente">
+                                    <p>Componente: ${componente.nome}</p>
+                                    <p>Estado: <span class="${componente.estado === 'funcionando' ? 'funcionando' : 'quebrado'}">${componente.estado}</span></p>
+                                    <p>Tempo de vida: ${componente.vida}</p>
+                                    ${componente.aviso_manutencao && componente.vida <= 3 ? `
+                                        <p class="aviso">⚠️ Manutenção preventiva recomendada!</p>
+                                        <button onclick="realizarManutencaoPreventiva(${computador.id}, ${componente.id})">Realizar manutenção preventiva</button>
+                                    ` : ''}
+                                </div>
+                            `).join('')}
+                            <button onclick="consertarComputador(${computador.id})">🔧 Consertar Computador</button>
+                        `;
+                        computadoresContainer.appendChild(computadorDiv);
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                });
+        }
+
+        // Atualiza o tempo de vida a cada 5 segundos
+        setInterval(atualizarTempoVida, 2000); // 5000 ms = 5 segundos
 
         function consertarComputador(id) {
             fetch(`/consertar/${id}`, { method: 'POST' })
@@ -80,51 +126,38 @@
                 });
         }
 
-        function adicionarComputador() {
-            fetch('/adicionar', { method: 'POST' })
+        function realizarManutencaoPreventiva(computadorId, componenteId) {
+            fetch(`/manutencao_preventiva/${computadorId}/${componenteId}`, { method: 'POST' })
                 .then(response => {
                     if (response.ok) {
-                        window.location.reload();
+                        window.location.reload();  // Recarrega a página para mostrar o novo status
                     } else {
-                        alert("Erro ao adicionar o computador.");
+                        alert("Erro ao realizar manutenção preventiva: " + response.statusText);
                     }
                 })
                 .catch(error => {
                     console.error('Erro:', error);
-                    alert("Erro ao adicionar o computador.");
-                });
-        }
-
-        function realizarManutencaoPreventiva(id) {
-            if (!id) {
-                console.error("ID do componente não fornecido ou inválido.");
-                alert("Erro: ID do componente não encontrado.");
-                return;
-            }
-            console.log(`Iniciando manutenção preventiva para o componente com ID: ${id}`);
-
-            fetch(`/manutencao_preventiva/${id}`, { method: 'POST' })
-                .then(response => {
-                    if (response.ok) {
-                        return response.json();
-                    } else {
-                        throw new Error("Erro na requisição ao servidor.");
-                    }
-                })
-                .then(data => {
-                    if (data.success) {
-                        console.log(`Manutenção preventiva realizada com sucesso para o componente ${id}`);
-                        window.location.reload(); // Atualiza a página
-                    } else {
-                        console.error(`Erro: ${data.message}`);
-                        alert("Erro ao realizar a manutenção preventiva: " + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error("Erro ao realizar manutenção preventiva:", error);
                     alert("Erro ao realizar manutenção preventiva.");
                 });
         }
+
+        function adicionarComputador() {
+            fetch('/adicionar', {  // Corrigido para '/adicionar'
+                method: 'POST'
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.reload();  // Recarrega a página para mostrar o novo computador
+                } else {
+                    alert("Erro ao adicionar computador: " + response.statusText);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert("Erro ao adicionar computador.");
+            });
+        }
+
     </script>
 </body>
 
