@@ -136,6 +136,24 @@ button:disabled {
     background-color: #218838;
 }
 
+
+.analise-computador {
+    margin-top: 20px; /* Afastar do botão de adicionar computador */
+    padding: 15px 25px;
+    background-color: #5b97d7; /* Cor de fundo igual ao botão de adicionar */
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    border: none; /* Remove a borda padrão */
+    cursor: pointer; /* Muda o cursor para indicar que é clicável */
+}
+
+.analise-computador:hover {
+    background-color: #4a85c6; /* Cor de fundo ao passar o mouse */
+}
+
 .historico-container {
     margin-top: 40px;
     background-color: #f9f9f9;

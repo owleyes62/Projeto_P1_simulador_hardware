@@ -2,6 +2,7 @@ import random
 import threading
 import time
 
+import pandas as pd
 from flask import Flask, jsonify, render_template
 
 app = Flask(__name__)
@@ -216,6 +217,33 @@ def atualizar_status():
     ambiente.verificar_status()  # Atualiza o status dos computadores
     status_atualizado = ambiente.mostrar_status()  # Obtém o status atualizado
     return jsonify(status=status_atualizado)
+
+
+@app.route("/analise")
+def analise():
+    # Obtém o histórico de problemas
+    historico = ambiente.mostrar_historico_problemas()
+
+    # Verifique o conteúdo do histórico
+    # Adicione esta linha para depuração
+    print("Histórico de Problemas:", historico)
+
+    # Cria um DataFrame a partir do histórico
+    df = pd.DataFrame(historico)
+
+    # Verifique a estrutura do DataFrame
+    print("DataFrame:", df.head())  # Adicione esta linha para depuração
+
+    # Realiza as análises
+    problemas_por_componente = df['componente'].value_counts().to_dict()
+    custo_total = df['custo'].sum()
+    problemas_comuns = df['problema'].value_counts().head(10).to_dict()
+
+    # Renderiza o template com os dados de análise
+    return render_template("analise.html",
+                           problemas_por_componente=problemas_por_componente,
+                           custo_total=custo_total,
+                           problemas_comuns=problemas_comuns)
 
 
 @app.route("/manutencao_preventiva/<int:computador_id>/<int:componente_id>", methods=["POST"])
